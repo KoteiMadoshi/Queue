@@ -7,37 +7,35 @@
 
 using namespace std;
 
-//queue class
-//
-// 
-//
-
 template < class value_type >
 class arrayqueue : public queue<value_type> {
-	public:
-		//constructor
-		arrayqueue();
-		arrayqueue(int);
-		//copy constructor
-		arrayqueue(const arrayqueue<value_type>&);
-		//destructor
-		~arrayqueue();
+public:
+	//constructor
+	arrayqueue();
+	arrayqueue(int);
+	//copy constructor
+	arrayqueue(const arrayqueue<value_type>&);
+	//destructor
+	~arrayqueue();
 
-		//operator
-		bool empty() const;
-		value_type read_front() const;
-		void push_back(const value_type&);
-		void pop_front();
-		void print_queue() const;
+	//operator
+	bool empty() const;
+	value_type read_front() const;
+	void push_back(const value_type&);
+	void pop_front();
+	void print_queue() const;
 
-		//friend ostream& operator<<(ostream& os, arrayqueue<value_type>& q);
+	//friend ostream& operator<<(ostream& os, arrayqueue<value_type>& q);
+
+	void operator=(const arrayqueue<value_type>&);
+	bool operator==(const arrayqueue<value_type>&);
 
 
-	private:
-		value_type* queue;
-		int maxdim;
-		int head;
-		int tail;
+private:
+	value_type* queue;
+	int maxdim;
+	int head;
+	int tail;
 
 };
 
@@ -62,9 +60,8 @@ arrayqueue<value_type>::arrayqueue(const arrayqueue<value_type>& q) {
 	this->maxdim = q.maxdim;
 	this->queue = new value_type[this->maxdim];
 	this->tail = 0;
-	for (int i = 0; i < (q.tail - q.head); ++i) {
-		queue[i] = q[i + (q.head%q.maxdim)];
-		this->tail += 1;
+	for (int i = 0; i < (q.tail - q.head); i++) {
+		this->push_back(q.queue[(q.head +i) % q.maxdim]);
 	}
 	this->head = 0;
 }
@@ -81,9 +78,9 @@ bool arrayqueue<value_type>::empty() const {
 
 template < class value_type >
 value_type arrayqueue<value_type>::read_front() const {
-	invalidread error;
+	invalidqueueoperator error;
 	if (this->empty()) {
-		throw error;
+		throw error.invalidread();
 	}
 	else {
 		return this->queue[this->head % this->maxdim];
@@ -92,9 +89,9 @@ value_type arrayqueue<value_type>::read_front() const {
 
 template < class value_type >
 void arrayqueue<value_type>::push_back(const value_type& x) {
-	invalidpush error;
+	invalidqueueoperator error;
 	if ((this->tail - this->head) == this->maxdim) {
-		throw error;
+		throw error.invalidpush();
 	}
 	else {
 		this->queue[this->tail % maxdim] = x;
@@ -104,9 +101,9 @@ void arrayqueue<value_type>::push_back(const value_type& x) {
 
 template < class value_type >
 void arrayqueue<value_type>::pop_front() {
-	invalidpop error;
+	invalidqueueoperator error;
 	if (this->empty()) {
-		throw error;
+		throw error.invalidpop();
 	}
 	else {
 		this->head += 1;
@@ -127,6 +124,34 @@ void arrayqueue<value_type>::print_queue() const {
 	cout << "]." << endl;
 }
 
+template< class value_type >
+void arrayqueue<value_type>::operator=(const arrayqueue<value_type>& q) {
+	invalidqueueoperator error;
+	if (this->maxdim < q.maxdim) {
+		throw error.invalidassignment();
+	}
+	else {
+		this->tail = 0;
+		for (int i = 0; i < (q.tail - q.head); ++i) {
+			this->push_back(q.queue[(q.head + i) % q.maxdim]);
+		}
+		this->head = 0;
+	}
+}
+
+template< class value_type >
+bool arrayqueue<value_type>::operator==(const arrayqueue<value_type>& q) {
+	if ((this->tail - this->head) != (q.tail - q.head)) {
+		return false;
+	}
+	for (int i = 0; i < (this->tail - this->head); ++i) {
+		if (this->queue[(i + this->head)%this->maxdim] != q.queue[(q.head + i) % q.maxdim]) {
+			return false;
+		}
+	}
+	return true;
+}
+
 /*
 template < class value_type >
 ostream& operator<<(ostream& os, arrayqueue<value_type>& q) {
@@ -140,8 +165,8 @@ ostream& operator<<(ostream& os, arrayqueue<value_type>& q) {
 		}
 	}
 	os << "].\n";
-
 	return os;
-}*/
+}
+*/
 
 #endif // !ARRAYQUEUE_HPP_INCLUDED
